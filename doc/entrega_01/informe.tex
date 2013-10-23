@@ -27,46 +27,60 @@
 \subsection{Ventajas}
 \subsection{Desventajas}
 
-\section{GarNet}
+\section{DHP}
 
 \subsection{Objetivo}
-El objetivo consiste en lograr encontrar asosiaciones entre genes para armar una red de genes, la cual consiste en un grafo cuyos nodos son determinados genes y sus vínculos corresponden a asociaciones entre los diversos genes.
-
-Para trabajar con información acerca de los genes, se utiliza comúnmente tecnología basada en \emph{microarrays}, 
 \subsection{Descripción}
-
 \subsection{Resultados}
 \subsection{Ventajas}
 \subsection{Desventajas}
 
-Gene association networks:
+\section{GarNet}
+
+\subsection{Objetivo}
+El objetivo de GarNet \cite{gene} consiste en lograr encontrar asosiaciones entre genes para armar una red de genes, la cual consiste en un grafo cuyos nodos son determinados genes y sus vínculos corresponden a asociaciones entre los diversos genes.
+
+Para trabajar con información acerca de los genes, se utiliza comúnmente tecnología basada en \emph{microarrays}, los cuales permiten obtener genotipos, medir niveles de expresión de genes y otros fines relacionados. Particularmente, interesa saber qué genes están interactuan con otros, en el sentido de que un gen puede codificar una proteína o ARN que interactúa con el producto de otro. Para esto se puede formar una red de regulación génica, que es un grafo que establece estas relaciones.
+
+Este es un problema que puede ser potencialmente atacado usando reglas de asociación.
+\subsection{Descripción}
+GarNet es un algoritmo para encontrar asociaciones entre genes basado en el algoritmo genético NSGA II \cite{nsga}. NSGA II es un algoritmo genético eficiente que permite trabajar con múltiples objetivos. En general, los algoritmos genéticos permiten encontrar a veces soluciones a problemas que no tienen un planteamiento matemático simple, y que usa búsquedas estocásticas para analizar un espacio de búsqueda amplio. 
+
+Para este problema en particular, los autores de \cite{nsga} crea una población de individuos que son equivalentes cada uno a una regla de asociación posible. 
+
+% Gene association networks:
 
 
-GARNET - Approach based on NSGA II to discover QAR. Avoids discretization of previous approaches.
-The attributes in this case are genes. Classically AR is based on correlation analysis and variance (Apriori).
-QAR: Continuous domain. If A is in a certain range and B is in a certain range, then C is within a certain range.
+% GARNET - Approach based on NSGA II to discover QAR. Avoids discretization of previous approaches.
+% The attributes in this case are genes. Classically AR is based on correlation analysis and variance (Apriori).
+% QAR: Continuous domain. If A is in a certain range and B is in a certain range, then C is within a certain range.
 
-Objective: Infer gene-gene associations from gene expression profiles provided by microarray technology.
+% Objective: Infer gene-gene associations from gene expression profiles provided by microarray technology.
 
-GARNET is based on non-dominated sorting genetic algorithm (NSGA II). Weights and previous information is NOT required. GARNET is MULTI-OBJECTIVE. It stands for gene gene associations from assosiaction rules for ingerring gene NETworks. In QAR, rules are represented by intervals, which in this case is adaptive due to the nature of genetic algorithms.
+% GARNET is based on non-dominated sorting genetic algorithm (NSGA II). Weights and previous information is NOT required. GARNET is MULTI-OBJECTIVE. It stands for gene gene associations from assosiaction rules for ingerring gene NETworks. In QAR, rules are represented by intervals, which in this case is adaptive due to the nature of genetic algorithms.
 
-Population: Each indivisual constitudes a rule. Iterative rule learning (55) is performed to penalized instances already covered by the rules found in GarNet, emphasizing covering instances still not covereed. It affects the generation of initial population in each evolutionary process.
+% Population: Each indivisual constitudes a rule. Iterative rule learning (55) is performed to penalized instances already covered by the rules found in GarNet, emphasizing covering instances still not covereed. It affects the generation of initial population in each evolutionary process.
 
-End condition: Number of generations is reached. 
-Returns: rule that belongs in the first pareto front with higher support value. The whole process is repeated until the desired number of rules is acgieved.
+% End condition: Number of generations is reached. 
+% Returns: rule that belongs in the first pareto front with higher support value. The whole process is repeated until the desired number of rules is acgieved.
 
-Codification: Attributes are continuos, so coding is also real. Individual: Fixed number of attributes n = numebr of attribute in the database. Two data structures: Upper includes the interval vounds of all attributes in the dataset.
-Buttom Membership of an attribute to the rule represented by an individual.
-Type:  0 when it does not belong to the rule, 1 or 2 if it belongs to the antecedent or the consequent of the rule, respectively. 
+% Codification: Attributes are continuos, so coding is also real. Individual: Fixed number of attributes n = numebr of attribute in the database. Two data structures: Upper includes the interval vounds of all attributes in the dataset.
+% Buttom Membership of an attribute to the rule represented by an individual.
+% Type:  0 when it does not belong to the rule, 1 or 2 if it belongs to the antecedent or the consequent of the rule, respectively. 
 
-Genetic operators: Crossover and mutation as described in 51.
-New directional mutation: If selected attribute is type 1, then type is 2, and vice-versa.
-After completing the inference process from datasets, the intersectin among the attribute pairs found for each input dataset is performed to find the most requent gene-gene associations.
+% Genetic operators: Crossover and mutation as described in 51.
+% New directional mutation: If selected attribute is type 1, then type is 2, and vice-versa.
+% After completing the inference process from datasets, the intersectin among the attribute pairs found for each input dataset is performed to find the most requent gene-gene associations.
 
-FINAL step: Inference of resulting gene network from intersection of results obtained for the k datasets. A gene network can be defined as a graph where nodes are attributes and edges link pairs of attributes extracted from rules.
+% FINAL step: Inference of resulting gene network from intersection of results obtained for the k datasets. A gene network can be defined as a graph where nodes are attributes and edges link pairs of attributes extracted from rules.
 
-Support of the rule and accuracy measure are selected to be optimized in garnet.Confidence is used as threshold to filter set of resulting rules. 
-Accuracy: Degree of veracity of rules using measured data.
+% Support of the rule and accuracy measure are selected to be optimized in garnet.Confidence is used as threshold to filter set of resulting rules. 
+% Accuracy: Degree of veracity of rules using measured data.
+\subsection{Resultados}
+\subsection{Ventajas}
+\subsection{Desventajas}
+
+
 
 \begin{thebibliography}{9}
 
@@ -75,8 +89,16 @@ Accuracy: Degree of veracity of rules using measured data.
 	Discovering gene association networks by multi-objective evolutionary quantitative association rules,
 	Journal of Computer and System Sciences 80, 2014,
 	pp. 118-136
-	\emph{Histogram Equalization}.
-	Freescale Semiconductor
+
+	\bibitem{bit_table}
+	BitTableFI: An efficient mining frequent itemsets algorithm
+	Jie Dong, Min Han,
+	School of Electronic and Information Engineering, Dallan University of Technology, Dalian 116023,
+
+	\bibitem{dhp}
+	An effective Hash-Based Algorithm for Mining Association Rules
+	Jong Soo Park, Ming-Syaen Chen,
+	IBM Thomas J. Watson Research Center
 
 \end{thebibliography}
 \end{document}
