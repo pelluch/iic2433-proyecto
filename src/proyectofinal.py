@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 Frecuent_ItemSet_DataSet = array(np.genfromtxt('./../data/chess.dat'), dtype='int')
 Min_Threshold = 2
 
-    
+
+
 def remove_values_from_list(the_list, val):
     A = list(the_list)
     for ii in range(list(the_list).count(val)):
@@ -23,18 +24,38 @@ def DataPreprocessing(M):
     
     NumberCounts = np.array(NumberCounts)
     Score = NumberCounts.sum(axis=0)[1::]
-    print(Score)
+    #print(Score)
     tuples = []
     dtype = [('item', int), ('count', int)]
     for idx, count in enumerate(Score):
         tuples.append((idx+1,count))
 
     #print(tuples)
-    print(tuples)
+    #print(tuples)
 
     npTuples = np.array(tuples, dtype=dtype)
     sorted_score = np.sort(npTuples, kind='quicksort', order='count')
-    print(sorted_score)
+    #print(sorted_score)
+    count_map = {}
+    for t in sorted_score:
+        count_map[t['item']] = t['count']
+
+    ordered = []
+    for itemset in M:
+        tmp = []
+        for item in itemset:
+            tmp.append((item, count_map[item]))
+        npItemset = np.array(tmp, dtype=dtype)
+        npItemset = np.sort(npItemset, kind='quicksort', order='count')
+        npItemset = [ t['item'] for t in npItemset]
+        ordered.append(npItemset)
+        
+
+#def relim(subitem_set):
+    
+
+
+
 
     #for i in range(0,np.amax(np.amax(M ,axis=1)) + 1):
     #    if Score[i] < Min_Threshold:
