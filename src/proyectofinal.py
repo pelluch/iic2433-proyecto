@@ -16,7 +16,7 @@ Min_Threshold = 2
         #A.remove(val)
         #return A
 
-def InsertTransaction(M,T,itemlider):
+def InsertTransaction(M,T,itemlider,sorted_score):
     ListTransaction = []
     ListTransaction = M[itemlider - 1]
     ListTransaction[0] = ListTransaction[0] + 1
@@ -44,13 +44,13 @@ def CreaEstrutraWhithoutTransactions(Score):
         ListTransaction = []
     return transactionList
 
-def ConstructTransactionList(M,Score):
+def ConstructTransactionList(M,Score,sorted_score):
     itemlider = []
     transactionList = CreaEstrutraWhithoutTransactions(Score) 
     for i in M:
         itemlider = i[0]
         transaction = i[1:]
-        transactionList = InsertTransaction(transactionList,transaction,itemlider)
+        transactionList = InsertTransaction(transactionList,transaction,itemlider,sorted_score)
     return transactionList
 
 
@@ -98,11 +98,19 @@ def DataPreprocessing(M):
     #Contabiliza las frecuencias de cada item
     NumberCounts = np.array(NumberCounts)
     Score = NumberCounts.sum(axis=0)[1::]
+    tuples = []
+    dtype = [('item', int), ('count', int)]
+    
+    for idx, count in enumerate(Score):
+        tuples.append((idx+1,count))
+
+    npTuples = np.array(tuples, dtype=dtype)
+    sorted_score = np.sort(npTuples, kind='quicksort', order='count')
+    
+    print(sorted_score)
     #########################################
     
     #Ordena los items en cada transaccion por el Score
-    tuples = []
-    dtype = [('item', int), ('count', int)]
     ordered = []
     for itemset in M:
         tmp = []
@@ -113,13 +121,12 @@ def DataPreprocessing(M):
         npItemset = [ t['item'] for t in npItemset]
         ordered.append(npItemset)
     ##########################################
-
     #Crea la estrutura inicial que va a ser usada en el algoritmo   
-    InitialRelimStructure = ConstructTransactionList(ordered,Score)  
+    InitialRelimStructure = ConstructTransactionList(ordered,Score,sorted_score)  
     ##########################################
 
-    Relim(InitialRelimStructure,Score)
-    
+    #Relim(InitialRelimStructure,Score)
+
 DataPreprocessing(Frecuent_ItemSet_DataSet)
 
 
