@@ -4,128 +4,180 @@ from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
 from collections import Counter
 import matplotlib.pyplot as plt
 import Queue
+import fnmatch
+import csv
 
 Frecuent_ItemSet_DataSet = array(np.genfromtxt('.\..\data\chesstest.dat'), dtype='int')
 Min_Threshold = 2
 
-
-
-#def remove_values_from_list(the_list, val):
-    #A = list(the_list)
-    #for ii in range(list(the_list).count(val)):
-        #A.remove(val)
-        #return A
-
-def InsertTransaction(M,T,itemlider,sorted_score):
-    ListTransaction = []
-    ListTransaction = M[itemlider - 1]
-    ListTransaction[0] = ListTransaction[0] + 1
-    Queue1 = ListTransaction[1]
-    Queue1.put(T)
+def InsertTransaction(TransactionLists,Transaction,Itemlider,Sortedscore):        
     
-    return M
-
-def BuscaTransactions(QueueTransac):
-    ListaTransactionsProcessedByRelim = []
-    while not QueueTransac.empty():
-         ListaTransactionsProcessedByRelim.append(QueueTransac.get())
-    return ListaTransactionsProcessedByRelim
-
-
-def CreaEstrutraWhithoutTransactions(Score):
-    transactionList = []
-    ListTransaction = []
+    TransactionList = []
     
-    for i in range(1,Score.size + 1):
-        Queue1 = Queue.Queue(0)
-        ListTransaction.insert(0,0)
-        ListTransaction.insert(1,Queue1)
-        transactionList.insert(i,ListTransaction)
-        ListTransaction = []
-    return transactionList
-
-def ConstructTransactionList(M,Score,sorted_score):
-    itemlider = []
-    transactionList = CreaEstrutraWhithoutTransactions(Score) 
-    for i in M:
-        itemlider = i[0]
-        transaction = i[1:]
-        transactionList = InsertTransaction(transactionList,transaction,itemlider,sorted_score)
-    return transactionList
-
-
-
-def Relim(ProcessedStructure,Score):
-    ListaTransactionsProcessedByRelim = []
-    NuevaStructure = []
+    for intem_score in Sortedscore:
+        if intem_score['item'] == Itemlider:
+            itemindex=np.where(Sortedscore==intem_score)          
+            TransactionList = TransactionLists[itemindex[0][0]]
+            TransactionList[0] = TransactionList[0] + 1
+            QueueTransaction = TransactionList[1]
+            QueueTransaction.put(Transaction)
     
-    for transactionlist in ProcessedStructure:
-        #Busca las transacciones que estan asociadas al itemlider
-        ListaTransactionsProcessedByRelim = BuscaTransactions(transactionlist[1])
+    return TransactionLists
 
-        if transactionlist[0] >= Min_Threshold: 
-            
-            #crear una strutura de datos vacio
-            NuevaStructure = CreaEstrutraWhithoutTransactions(Score)
-            
-            #constroye nueva Data Structure insertando apenas las transacciones del itemlider
-            for i in ListaTransactionsProcessedByRelim:
-                if not i:
-                    continue
-                else: 
-                    itemlider = i[0]
-                    transaction = i[1:]
-                    NuevaStructure = InsertTransaction(NuevaStructure,transaction,itemlider)
-            
-            #llama el algoritmo Relim con la nueva estrutura
-            Relim(NuevaStructure,Score)
+def SearchTransactions(TransactionQueue):
+    
+    TransactionListProcessed = []
+    
+    while not TransactionQueue.empty():
+         TransactionListProcessed.append(TransactionQueue.get())
+    return TransactionListProcessed
+
+
+def CreateRelimStructureWhithoutTransactions(Sortedscore):
+    
+    TransactionLists = []
+    TransactionList = []
+    
+    for item_score in Sortedscore:
+        QueueTransaction = Queue.Queue(0)
+        TransactionList.insert(0,0)
+        TransactionList.insert(1,QueueTransaction)
         
-        #inserta las de la lista de transacciones que esta a ser procesada en la estrutura procesada originalmente
-        for transaction1 in ListaTransactionsProcessedByRelim:
-            if not transaction1:
-                continue
-            else :
-                itemlider = transaction1[0]
-                transaction = transaction1[1:]
-                ProcessedStructure = InsertTransaction(ProcessedStructure,transaction,itemlider)
-        NuevaStructure = []
-
-def DataPreprocessing(M):
-    NumberCounts = []
-    for i  in M:
-        NumberCounts.append(np.bincount(np.array(i),minlength=np.amax(np.amax(M ,axis=1)) + 1))
+        itemindex=np.where(Sortedscore==item_score) 
+        
+        TransactionLists.insert(itemindex[0][0],TransactionList)
+        TransactionList = []
     
-    #Contabiliza las frecuencias de cada item
-    NumberCounts = np.array(NumberCounts)
-    Score = NumberCounts.sum(axis=0)[1::]
-    tuples = []
+    return TransactionLists
+
+def ConstructRelimStructureWithTransactionLists(Transactions,Sorted_score):
+    
+    Itemlider = []
+    TransactionLists = CreateRelimStructureWhithoutTransactions(Sorted_score) 
+    
+    for transaction in Transactions:
+        if not transaction:
+            continue
+        else:
+            Itemlider = transaction[0]
+            transactionToInsert = transaction[1:]
+            TransactionLists = InsertTransaction(TransactionLists,transactionToInsert,Itemlider,Sorted_score)
+    return TransactionLists
+
+def RemoveInFrecuentItems(TransactionsDataBase,Sortedscore):
+    
+    InfrecuentItems = []
+    TransactionsWithoutInFrecuent = []
+    Sorted_scoreWithoutInefrecuents = []
+    
+    for intem_score in Sortedscore:
+        if intem_score['count'] < Min_Threshold:
+            InfrecuentItems.append(intem_score['item'])
+            itemindex=np.where(Sortedscore==intem_score)
+        
+    Sorted_scoreWithoutInefrecuents = [intem_score for intem_score in Sortedscore if intem_score['item'] not in InfrecuentItems]
+        
+    for transaction in TransactionsDataBase:
+
+        TupleWhithoutInFrecuent = [transaction for j, transaction in enumerate(transaction) if transaction not in InfrecuentItems]
+        TransactionsWithoutInFrecuent.append(TupleWhithoutInFrecuent)
+
+    return TransactionsWithoutInFrecuent,Sorted_scoreWithoutInefrecuents
+
+def DataPreprocessing(DatabaseTransactions):
+   
+    ItemsCounts = []
+    
+    #Count the frecuencies of each item
+    for transaction  in DatabaseTransactions:
+        ItemsCounts.append(np.bincount(np.array(transaction),minlength=np.amax(np.amax(DatabaseTransactions ,axis=1)) + 1))
+
+    ItemsCounts = np.array(ItemsCounts)
+    Support = ItemsCounts.sum(axis=0)[1::]
+    ##########################################################################################
+    
+    #Order Support of each item
+    Tuples = []
     dtype = [('item', int), ('count', int)]
     
-    for idx, count in enumerate(Score):
-        tuples.append((idx+1,count))
+    for item, counter in enumerate(Support):
+        Tuples.append((item+1,counter))
 
-    npTuples = np.array(tuples, dtype=dtype)
-    sorted_score = np.sort(npTuples, kind='quicksort', order='count')
+    TuplesWithSupport = np.array(Tuples, dtype=dtype)
+    Sorted_Support = np.sort(TuplesWithSupport, kind='quicksort', order='count')
+    #########################################################################################
+
+    #Remove InFrecuent Items from Transactions DataBase and Sorted Support
+    [DatabaseTransactions,sorted_score_whithoutIne] = RemoveInFrecuentItems(DatabaseTransactions,Sorted_Support)
+    #########################################################################################
     
-    print(sorted_score)
-    #########################################
+    #Order each transaction using the Support Order
+    OrderedTransactions = []
     
-    #Ordena los items en cada transaccion por el Score
-    ordered = []
-    for itemset in M:
-        tmp = []
-        for item in itemset:
-            tmp.append((item, Score[item - 1]))
-        npItemset = np.array(tmp, dtype=dtype)
-        npItemset = np.sort(npItemset, kind='quicksort', order='count')
-        npItemset = [ t['item'] for t in npItemset]
-        ordered.append(npItemset)
+    for transaction in DatabaseTransactions:
+        TuplesToOrder = []
+        
+        for item in transaction:
+            TuplesToOrder.append((item, Support[item - 1]))
+        
+        TransactionToOrder = np.array(TuplesToOrder, dtype=dtype)
+        
+        OrderedTransaction = np.sort(TransactionToOrder, kind='quicksort', order='count')
+        OrderedTransaction = [ item['item'] for item in OrderedTransaction]
+        
+        OrderedTransactions.append(OrderedTransaction)
     ##########################################
-    #Crea la estrutura inicial que va a ser usada en el algoritmo   
-    InitialRelimStructure = ConstructTransactionList(ordered,Score,sorted_score)  
+    
+    #Creates Initial Relim Structure   
+    InitialRelimStructure = ConstructRelimStructureWithTransactionLists(OrderedTransactions,sorted_score_whithoutIne) 
+    print(InitialRelimStructure) 
     ##########################################
 
-    #Relim(InitialRelimStructure,Score)
+    #Calls RelimAlgorithm
+    FrecuentItemsFinal = Relim(InitialRelimStructure,sorted_score_whithoutIne)
+    print(FrecuentItemsFinal)
+
+def Relim(RelimStructure,Sortedscore):
+    
+    TransactionsListToProcess = []
+    NewRelimStructure = [] 
+    FrecuentItemsInRecursion = []
+    FrecuentItems = []
+    Aux = []
+
+    for TransactionList in RelimStructure:
+        #Busca las transacciones que estan asociadas al itemlider
+        TransactionsListToProcess = SearchTransactions(TransactionList[1])
+        #print(ListaTransactionsProcessedByRelim)
+        if TransactionList[0] >= Min_Threshold: 
+            
+            index = RelimStructure.index(TransactionList)
+            itemprefix = Sortedscore[index]['item']
+            FrecuentItems.append(itemprefix)
+            
+            NewRelimStructure = ConstructRelimStructureWithTransactionLists(TransactionsListToProcess,Sortedscore)
+            
+            FrecuentItemsInRecursion = Relim(NewRelimStructure,Sortedscore)
+            for item in FrecuentItemsInRecursion:
+                Aux.append(itemprefix)
+                Aux.append(item)
+                FrecuentItems.append(Aux)
+                Aux = []
+            FrecuentItemsInRecursion = []
+
+        #inserta las de la lista de transacciones que esta a ser procesada en la estrutura procesada originalmente
+        for Transaction in TransactionsListToProcess:
+            if not Transaction:
+                continue
+            else :
+                Itemlider = Transaction[0]
+                TransactionToInsert = Transaction[1:]
+                RelimStructure = InsertTransaction(RelimStructure,TransactionToInsert,Itemlider,Sortedscore)
+        
+        NewRelimStructure = []
+        TransactionList[0] = 0
+    
+    return FrecuentItems
 
 DataPreprocessing(Frecuent_ItemSet_DataSet)
 
