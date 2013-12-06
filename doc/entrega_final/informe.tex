@@ -3,7 +3,7 @@
 \selectlanguage{spanish}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\title{Entrega 1}
+\title{Entrega 2 - Proyecto Final}
 \author{
   Lluch, Pablo\\
   \texttt{pablo.lluch@gmail.com}
@@ -21,12 +21,21 @@
 \newpage
 
 \section{Introducci\'on}
-A continuación se presenta el informe de avance, que tiene como principal objetivo identificar, evaluar y analizar algoritmos avanzados que están directamente relacionados con el problema de encontrar k frequent itemsets, en grandes bases de datos. Para lograr este objetivo, se seleccionar\'an un conjunto de papers científicos. Estos papers constituyen parte de la investigación que se desarrolla actualmente en esta área y cada uno de ellos aborda una distinta estrategia. Esta estrategia intenta mejorar sucesivos problemas identificados en algoritmos anteriores y/o hacer mejorías que hagan que su implementaci\'on sea lo más simple posible, permitiendo al mismo tiempo encontrar una solución para el problema en el menor tiempo de ejecución.
+
+A continuación se presenta el Informe Final, que tiene como principal objetivo, implementar y evaluar el  algoritmo que elegimos en la entrega intermedia – \emph{Relim} (Recursive Eliminatión Algorithm). Este algoritmo está directamente relacionado con el problema de encontrar \emph{k frecuent items sets}, en grandes volumen de datos.
 \\\\
-Por ejemplo, una medida de comparación comúnmente utilizada, consiste en comparar diferentes soluciones sobre distintas bases de datos: \emph{sparse} (baja fracci\'on de items presentes en cada transacci\'on) y densas (alta fracción de ítems presentes en cada transacción).Desde ahí se extrapolan conclusiones sobre los datos. En general, cuando se aborda este tipo de problema, estamos interesados en descubrir cu\'ales son los algoritmos que presentan menores tiempos de ejecución. Sin embargo, el análisis de revisión bibliogr\'afica que se hizo en el presente informe muestra que no necesariamente el algoritmo que en un comienzo presenta mejor tiempo de computación en distinta bases de datos es el mejor y más simple de implementar. A veces, hay algoritmos que son muy rápidos pero emplean una estructura de datos muy compleja lo que torna difícil su implementación y además requieren cargar completamente la base de datos de transacciones en memoria. Es posible observar que ciertas alternativas cuando se aplican en determinados conjuntos de datos pueden mantener su eficiencia y generar  más ventajas en t\'erminos de implementación. Son esas alternativas, ventajas y desventajas que intentaremos discutir  y evaluar en este informe consider\'andolas al momento de seleccionar nuestro modelo para el proyecto.
+La elección del algoritmo resultó de un proceso evolutivo en que valoramos distintas soluciones propuestas por distintos investigadores, para decidir cuál sería el algoritmo que mejor serviría nuestras pretensiones. Pretendíamos implementar un algoritmo que involucrase una estrategia eficiente para obtención de los ítem-sets, aún que al mismo tiempo, no complicase deberás su implementación. Sin embargo, tenemos la noción que ni siempre los algoritmos que producen mejores resultados son los más fáciles de implementar. El algoritmo FP-Growth es un buen ejemplo que comprobar esta afirmación.
 \\\\
-Este informe se presentará en diferentes secciones, primero, con la identificación del problema (asociado al concepto de itemsets frecuentes) y posteriormente para cada unos de los algoritmos revisados, se har\'a una descripción general del método y se identificar\'a cual es su objetivo así como ventajas y desventajas comparativas. Finalmente,  se describirá con mayor detalle el modelo que utilizaremos en el proyecto de Minería de Datos.
-En las siguientes secciones y en la bibliograf\'ia se podr\'an encontrar los papers investigados.
+Hay diversos criterios que podemos utilizar para evaluar a priori lo cuan completo es un algoritmo, por ejemplo, si consomé o no poca memoria o si tiene un tiempo de ejecución razonable. Estos dos criterios pueden ser influenciados positivamente o negativamente, dependiendo del uso que damos a las estructuras de datos usadas para almacenar y manipular las transacciones. 
+\\\\
+Por eso, para esta entrega, optamos por trabajar con el algoritmo \emph{Relim}, esencialmente porque emplea una estructura de datos bastante simples (Lista en que cada posición guarda una lista de transacciones) para guardar las transacciones, como se podrá demonstrar el la descripción detallada del algoritmo, más adelante. Igualmente, la forma como este algoritmo procesa las transacciones (a través de eliminación recursiva) hace que esta idea se constituye una opción válida y su implementación en Python sea fácil.     
+\\\\
+Durante la descripción detallada del algoritmo, iremos señalar las modificaciones que hicimos faje al solución proyectada inicialmente (en el paper) y explicar cómo la adopción de  estas, nos ayudaran  a implementar eficazmente el algoritmo.
+\\\\
+Por fin, se hará un análisis experimental, confrontando el algoritmo en distintos tipos de bases de datos y se extrapolarán conclusiones que podrán ter como fundamento otras ideas presentes en anteriores algoritmos revisados. Se evaluó nuestra solución sobre distintos tipos bases de datos: esparzas (bajo fracción ítems presentes en cada transacción) y densas (alta fracción de ítems presentes en cada transacción). 
+\\\\
+Este informe se presentará en diferentes secciones, primero, con la identificación del problema (asociado al concepto de ítem-sets frecuente) y posteriormente para cada uno de los algoritmos revisados (estudiados en la parte intermedia), se hace una descripción general del método y se identifica cuál es su objetivo así como, ventajas competitivas y problemas que generalmente aportan de su modelo y le están asociados. Por fin,  se describirá con mayor detalle en modelo que utilizaremos en el proyecto de Minería de Datos –  Algoritmo Relim y su análisis experimental.
+
 
 \section{Problema}
 
@@ -151,6 +160,82 @@ Adicionalmente, el proceso se repite utilizando distintos datasets. Una vez se o
 \item Puede ser complejo definir los operadores gen\'eticos adecuados
 \item Aborda un problema no muy general
 \end{enumerate}
+
+\section{Método Implementado - RELIM}
+\subsection{Objetivo}
+
+El objetivo del RELIM es encontrar tal como en cualquier algoritmo de \emph{ítems sets frecuentes} todos los ítems sets que cumplan un umbral dado por un usuario. Este algoritmo fue un de los algoritmos precursores en el uso de un esquema de \emph{eliminación recursiva}, una de las diferentes técnicas que se usan para encontrar los k ítems sets frecuentes. Tal como el algoritmo SAM, la estrategia aquí adoptada consiste en efectuar una busca en profundidad primero o sea, se seleccionan todas las transacciones que contienen un ítem como líder que se verificó inicialmente como el más frecuente y después, se eliminan todas las ocurrencias de este ítem en las transacciones. Así se obtiene una  base de datos más pequeña que va ser usada recursivamente para obtener todos los ítems sets que comparten el mismo prefijo y posteriormente se iteran sobre los restantes ítems líder en la bases de datos original. Aún que Relim sea inspirado en algoritmos como FP-Growth, algoritmo clásico que consigue minimizar el tiempo de procesamiento sobre distintas bases de datos, su gran objetivo es simplificar la estructura de almacenamiento y al mismo tiempo intentar no comprometer su eficiencia.  
+
+\subsection{Descripción}
+
+Este algoritmo tira partido de un mecanismo ventajoso para el procesamiento de los datos que se designa  esquema de eliminación recursiva. Antes hacer uso dese mismo mecanismo, la base de datos transacciones pasa por un conjunto de pasos de pre-procesamiento que tienen como función principal preparar y organizar las transacciones para que pueden ser guardas en las estructuras de datos. 
+
+\begin{enumerate}
+\item Inicialmente se calculan las frecuencias (suporte) de cada uno de los ítems individualmente 
+\item Se descartan los que no cumplan el umbral porque como sabemos un ítem set que no es frecuente, nunca podrá ser parte integrante de un ítem set frecuente.
+\item En seguida se ordenan cada un de los ítems presentes en las transacciones de forma ascendente según las frecuencias encontradas en el paso anterior.
+\item Se constroye la estrutura de datos que soporta el algoritmo -
+Contrariamente al algoritmo SAM, RELlM organiza los datos a procesar de forma diferente. Para ese efecto, representa los datos según una representación casi vertical. En cada posición del arreglo se mantiene una lista de transacciones que es indexada por cada ítem líder que existe en la base de datos.
+\\\\
+\textbf{\emph{ítem líder}} es el primero item de cada transacción
+\\\\
+ Además, cada posición se pode definir como un puntero que apunta para cada para a lista de transacciones y un contador que representa el soporte del ítem considerado. Por veces, pude acontecer que este valor de suporte sea superior al numero de transacciones en la lista ya que existen transacciones que no poseen ningún ítem, solamente el ítem líder y por eso cuando son mapeadas en la estrutura apenas el contador es incrementado. 
+\end{enumerate}
+El mecanismo de eliminación recursiva se traduce por una función recursiva que es llamada para cada un de las listas de transacciones. Antes de procesar la lista de transacciones se testa se el valor del suporte respecta el umbral mínimo. Caso respecte, significa que el ítem set constituido por el \emph{ítem líder} que estamos a analizar juntamente todos los items que son retornados por la recursión son frecuentes.
+\\\\
+Para obtener todos los items set frecuentes (usando recursión) hay que procesar cada lista de lista de transacciones en una nueva estructura y para eso se usan las transacciones que el item líder apunta.
+\\\\
+Después de una lista de transacciones ser procesada, sus transacciones son asignadas sucesivamente a las otras posiciones del arreglo (otras listas de transacciones) porque en cada una de esas transacciones podrá estar un nuevo \emph{frecuent item-set} independiente de su \emph{ítem líder}, algo idéntico con lo que el algoritmo SAM hace con la \emph{operación de Merge}. La diferencia es que en este caso el algoritmo no identifica transacciones con ítems repetidos y por veces, podrán existir duplicados en una lista de transacciones.   
+
+\subsection{Implementación}
+
+Como ya fue dicho anteriormente, las ventajas asociadas al algoritmo Relim resultan del abordaje simplista que es utilizado para manipular cada una de las transacciones. Por lo tanto, se tornaba crucial crear la estructura de datos en Pyton, respectando esta idea. Con esto, decidimos que la mejor manera de implementar el algoritmo seria a través de una lista, \emph{RelimStructure}, en que cada posición posee una lista constituida por un contador de soporte y una \emph{Queue} - destinada a almacenar las transacciones  indexadas por el \emph{ítem líder}. El uso de una Queue constituye una importante decisión de diseño  porque torna la implementación más simples ya que facilita mucho la inserción de futuras transacciones así como su obtención a cualquier momento (necesarias en casa paso de la recursión) a través de las operaciones \textbf{Put} y \textbf{Get}. 
+\\\\
+En general el algoritmo se implementó como estaba previsto y se obtuvieran las siguientes funciones:    
+
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+\item\textbf{InsertTransaction}:
+función que inserta una transacción en la lista de Transacciones, usando el itemLider como index.Para hacer eso, es necesario conocer el itemindex, que el ItemLider tiene en lista Sortedscore. La inserción de una transacción implica el incremento del contador asociado al item lider y inserción el la respectiva Queue.
+\item \textbf{SearchTransactions}:
+función que retorna las transacciones que están guardadas en la TransactionQueue.Iterativamente recupera todos los valores hasta que la Queue permanezca vacía.
+\item \textbf{CreateRelimStructureWhithoutTransactions}:
+función que crea la estructura (vacía) que irá soportar el algoritmo.
+\item \textbf{ConstructRelimStructureWithTransactionLists}:
+función que inicialmente crea la estrutura vacía -
+CreateRelimStructureWhithoutTransactions. Por cada transacción que existe en la lista de Transacciones insertamos la transacción el estrutura vacia -InsertTransaction
+\item \textbf{RemoveInFrecuentItems}:
+función que recibe el total de Transacciones (Database, remove de la Base de Datos los item infrecuentes y actualiza la lista de suporte.
+\item \textbf{Relim}:
+función recursiva que itera sobre todas las listas de transacciones individualmente almacenadas en la RelimStructure y encuentra todos los item-sets, para cada ítem líder.
+\item \textbf{DataPreprocessing}:
+función que pre-procesa los datos (usando los pasos ya descritos) de la base de datos original y los convierte en la estructura de datos usada por el algoritmo.
+\end{itemize}
+
+El modelo de procesamiento adoptado  por este algoritmo para manipular las transacciones permitió programar Relim en pocas lineas de código.  
+\newpage
+
+\subsection{Resultados Experimentales}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{testes.png}
+\caption{Tests Results}
+\end{figure}
+
+Nuestra implementación del algoritmo RELIM fue evaluada en dos tipos de bases de datos, esparzas – bases de datos con baja fracción de ítems y densas – bases de datos con alta fracción de ítems. Para atingir ese objetivo se realizaran 3 distintos testes:
+
+\begin{itemize}
+\item\textbf{Teste1: grouptest.dat} – un teste creado por el grupo para simular una base de datos con pocos items y pocas transacciones a procesar. Para este teste se utilizaran 5 items y un total 19 Transacciones.
+\item\textbf{Teste2: chess.dat} – un teste creado para simular el algoritmo sobre una base de datos densa, alto número de ítems 75 (valor máximo) y un total de 3196 Transacciones (Threshold próximo del número de total de transacciones).
+\item\textbf{Teste3: mushroom.dat} – un teste creado para para simular el algoritmo sobre una base de datos densa, alto número de ítems 119 (valor máximo) y un total de 8129 Transacciones (Threshold distante del número de total de transacciones).
+
+\end{itemize}
+\newpage
+Los resultados obtenidos comprueban que este algoritmo es especialmente eficaz para bases de datos esparzas (baja fracción de ítems presentes) porque la estructura de datos a procesar, después de remover items infrecuentes es considerablemente pequeña, ayudando en la computación del resultado. 
+Cuando se analiza este algoritmo sobre el  chess dataset por ejemplo, (base de datos densa), el desempeño del algoritmo no es drásticamente afectado (24,6s) porque en este caso consideramos un suporte mínimo próximo del número total de transacciones para evaluar esta situación. 
+\\\\
+Si analizarnos el desempeño del algoritmo en el mushroom dataset (bajo threshold face al número de transacciones) su desempeño es drásticamente afectado por lo que conseguimos contemplar por los resultados en la tabla. Esto se puede explicar, argumentando que en este tipo de datasets (densos), há mayor probabilidad de existieren transacciones repetidas generadas en la recursión del algoritmo y por consiguiente, tornar su procesamiento más lento. De referir que no tenemos ningún tratamiento especial a las transacciones repetidas, las insertamos normalmente como cualquier transacción.
 
 \begin{thebibliography}{9}
 
